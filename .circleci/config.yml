@@ -20,7 +20,9 @@ jobs:
       - checkout
       - run:
           name: "Random pass/fail"
-          command: echo "Passing this run."
+          command: |
+            echo "Failing this run."
+            exit 1
   dummy:
     docker:
       - image: cimg/base:current
@@ -44,4 +46,6 @@ workflows:
       - dummy:
           name: all-good
           requires:
-            - say-hello: success
+            or:
+              - approve-failure: success
+              - say-hello: success
