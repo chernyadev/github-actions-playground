@@ -18,16 +18,29 @@ jobs:
   decide-maybe:
     runs-on: ubuntu-latest
     outputs:
-      run: ${{ steps.decide.outputs.run }}
+      coin: ${{ steps.decide.outputs.coin }}
     steps:
       - id: decide
         name: Flip a coin
         run: |
-          echo "run=$((RANDOM % 2))" >> "$GITHUB_OUTPUT"
-  maybe:
+          if [ $((RANDOM % 2)) -eq 0 ]; then
+            echo "coin=heads" >> "$GITHUB_OUTPUT"
+            echo "Result: heads 🪙"
+          else
+            echo "coin=tails" >> "$GITHUB_OUTPUT"
+            echo "Result: tails 🪙"
+          fi
+  heads:
     runs-on: ubuntu-latest
     needs: decide-maybe
-    if: needs.decide-maybe.outputs.run == '1'
+    if: needs.decide-maybe.outputs.coin == 'heads'
     steps:
-      - name: Sometimes runs
-        run: echo "Heads"
+      - name: Heads path
+        run: echo "Heads wins 🥇"
+  tails:
+    runs-on: ubuntu-latest
+    needs: decide-maybe
+    if: needs.decide-maybe.outputs.coin == 'tails'
+    steps:
+      - name: Tails path
+        run: echo "Tails wins 🧪"
