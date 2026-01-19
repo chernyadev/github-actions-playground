@@ -29,3 +29,11 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - say-hello
+      - approve-1:
+          type: approval
+          requires:
+            - say-hello: success
+      - approve-2:
+          type: approval
+          requires:
+            - say-hello: failed
