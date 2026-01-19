@@ -10,3 +10,37 @@ jobs:
     steps:
       - name: No-op
         run: echo "All good"
+  pass-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Another no-op
+        run: echo "Still good"
+  decide-maybe:
+    runs-on: ubuntu-latest
+    outputs:
+      coin: ${{ steps.decide.outputs.coin }}
+    steps:
+      - id: decide
+        name: Flip a coin
+        run: |
+          if [ $((RANDOM % 2)) -eq 0 ]; then
+            echo "coin=heads" >> "$GITHUB_OUTPUT"
+            echo "Result: heads 🪙"
+          else
+            echo "coin=tails" >> "$GITHUB_OUTPUT"
+            echo "Result: tails 🪙"
+          fi
+  heads:
+    runs-on: ubuntu-latest
+    needs: decide-maybe
+    if: needs.decide-maybe.outputs.coin == 'heads'
+    steps:
+      - name: Heads path
+        run: echo "Heads wins 🥇"
+  tails:
+    runs-on: ubuntu-latest
+    needs: decide-maybe
+    if: needs.decide-maybe.outputs.coin == 'tails'
+    steps:
+      - name: Tails path
+        run: echo "Tails wins 🧪"
