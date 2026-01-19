@@ -21,6 +21,13 @@ jobs:
       - run:
           name: "Random pass/fail"
           command: echo "Passing this run."
+  dummy:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run:
+          name: "Dummy pass"
+          command: echo "Dummy job passed."
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/guides/orchestrate/workflows/ & https://circleci.com/docs/reference/configuration-reference/#workflows
@@ -30,6 +37,11 @@ workflows:
     jobs:
       - say-hello
       - approve-failure:
+          name: all-good
           type: approval
           requires:
             - say-hello: failed
+      - dummy:
+          name: all-good
+          requires:
+            - say-hello: success
