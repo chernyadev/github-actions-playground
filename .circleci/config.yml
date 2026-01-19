@@ -19,7 +19,7 @@ jobs:
       - run:
           name: "Auto approve"
           command: |
-            echo "Auto approved." 
+            echo "Auto approved."
 
   gate:
     docker:
@@ -35,7 +35,7 @@ workflows:
     jobs:
       - say-hello
 
-      - approve-failure:
+      - approve-manual:
           type: approval
           requires:
             - say-hello: failed
@@ -46,8 +46,8 @@ workflows:
 
       - gate:
           requires:
-            - approve-failure:
-                - success
-                - failed
-            - approve-auto:
-                - success
+            - approve-auto
+            - approve-manual
+          filters:
+            branches:
+              only: master
