@@ -11,13 +11,6 @@ jobs:
           command: |
             echo "Failing this run."
             exit 1
-  dummy:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - run:
-          name: "Dummy pass"
-          command: echo "Dummy job passed."
 
 workflows:
   say-hello-workflow:
@@ -27,7 +20,3 @@ workflows:
           type: approval
           requires:
             - say-hello: failed
-      - dummy:
-          name: dummy-pass
-          requires:
-            - approve-failure: success
