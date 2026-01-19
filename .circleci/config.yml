@@ -48,6 +48,3 @@ workflows:
           requires:
             - approve-auto
             - approve-manual
-          filters:
-            branches:
-              only: master
