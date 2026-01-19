@@ -38,5 +38,4 @@ workflows:
       - gate:
           requires:
             - say-hello
-            - approve-failure:
-                optional: true
+            - approve-failure
