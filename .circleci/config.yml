@@ -10,25 +10,44 @@ jobs:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
-            exit 1
-  dummy:
+            exit 0
+
+  approve-auto:
     docker:
       - image: cimg/base:current
     steps:
       - run:
-          name: "Dummy pass"
-          command: echo "Dummy job passed."
+          name: "Auto approve"
+          command: |
+            echo "Auto approved."
+
+  gate:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run:
+          name: "Final gate"
+          command: |
+            echo "Gate passed."
 
 workflows:
   say-hello-workflow:
     jobs:
       - say-hello
+
       - approve-failure:
           type: approval
           requires:
-            - say-hello
-      - dummy:
-          name: dummy-pass
+            - say-hello: failed
+
+      - approve-auto:
           requires:
+            - say-hello: success
+
+      - gate:
+          requires:
+            - approve-auto
             - approve-failure
-            - say-hello
+          filters:
+            branches:
+              only: master
