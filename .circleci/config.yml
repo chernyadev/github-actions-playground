@@ -25,6 +25,7 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello
+        
       - approve-failure:
           when: on_fail
           type: approval
