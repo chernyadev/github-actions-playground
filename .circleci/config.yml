@@ -12,6 +12,15 @@ jobs:
             echo "Failing this run."
             exit 0
 
+  approve-auto:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run:
+          name: "Auto approve"
+          command: |
+            echo "Auto approved." 
+
   gate:
     docker:
       - image: cimg/base:current
@@ -19,7 +28,7 @@ jobs:
       - run:
           name: "Final gate"
           command: |
-            echo "Gate passed (either tests passed, or override was approved)."
+            echo "Gate passed."
 
 workflows:
   say-hello-workflow:
@@ -31,8 +40,14 @@ workflows:
           requires:
             - say-hello: failed
 
+      - approve-auto:
+          requires:
+            - say-hello: success
+
       - gate:
           requires:
             - say-hello:
                 - success
                 - failed
+            - approve-auto:
+                - success
