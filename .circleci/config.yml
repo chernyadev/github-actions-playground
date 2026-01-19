@@ -20,14 +20,7 @@ jobs:
       - checkout
       - run:
           name: "Random pass/fail"
-          command: |
-            rand=$((RANDOM % 2))
-            echo "Random integer: $rand"
-            if [ "$rand" -eq 0 ]; then
-              echo "Failing this run."
-              exit 1
-            fi
-            echo "Passing this run."
+          command: echo "Passing this run."
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/guides/orchestrate/workflows/ & https://circleci.com/docs/reference/configuration-reference/#workflows
