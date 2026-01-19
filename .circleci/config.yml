@@ -12,11 +12,31 @@ jobs:
             echo "Failing this run."
             exit 1
 
+  gate:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run:
+          name: "Final gate"
+          command: |
+            echo "Gate passed (either tests passed, or override was approved)."
+
 workflows:
   say-hello-workflow:
     jobs:
       - say-hello
+
+      # only appears if say-hello failed
       - approve-failure:
           type: approval
           requires:
             - say-hello: failed
+
+      # gate runs in BOTH cases:
+      # - after say-hello if it succeeded
+      # - after approve-failure if say-hello failed (and approval granted)
+      - gate:
+          requires:
+            - say-hello
+            - approve-failure:
+                optional: true
