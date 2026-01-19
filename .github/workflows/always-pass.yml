@@ -1,0 +1,12 @@
+name: Always Pass
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pass:
+    runs-on: ubuntu-latest
+    steps:
+      - name: No-op
+        run: echo "All good"
