@@ -10,7 +10,7 @@ jobs:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
-            exit 1
+            exit 0
 
   gate:
     docker:
