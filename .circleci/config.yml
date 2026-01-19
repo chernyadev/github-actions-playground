@@ -40,11 +40,18 @@ workflows:
           requires:
             - say-hello: failed
 
-      - approve-auto:
+      - gate:
+          name: gate-manual
+          requires:
+            - approve-manual
+
+      - gate:
+          name: gate-auto
           requires:
             - say-hello: success
 
       - gate:
+          name: gate-final
           requires:
-            - approve-auto
-            - approve-manual
+            - gate-manual
+            - gate-auto
