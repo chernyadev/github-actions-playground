@@ -9,12 +9,15 @@ jobs:
       - run:
           name: "Random pass/fail"
           command: |
-            if [ "$RANDOM" -gt 16384 ]; then
-              echo "Failing this run."
-              exit 1
-            else
-              echo "Passing this run."
-            fi
+            echo "Failing this run."
+            exit 1
+  dummy:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run:
+          name: "Dummy pass"
+          command: echo "Dummy job passed."
 
 workflows:
   say-hello-workflow:
@@ -24,6 +27,8 @@ workflows:
           type: approval
           requires:
             - say-hello
-          filters:
-            branches:
-              ignore: /.*/
+      - dummy:
+          name: dummy-pass
+          requires:
+            - approve-failure
+            - say-hello
