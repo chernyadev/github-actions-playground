@@ -36,4 +36,4 @@ workflows:
             - say-hello:
                 - success
                 - failed
-            - approve-failure:
+            - approve-failure
