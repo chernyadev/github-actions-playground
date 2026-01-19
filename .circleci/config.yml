@@ -30,9 +30,6 @@ workflows:
           requires:
             - say-hello: failed
 
-      # gate runs in BOTH cases:
-      # - after say-hello if it succeeded
-      # - after approve-failure if say-hello failed (and approval granted)
       - gate:
           requires:
             - approve-failure:
