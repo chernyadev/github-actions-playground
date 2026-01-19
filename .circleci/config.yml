@@ -25,11 +25,10 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello
-
-      # only appears if say-hello failed
       - approve-failure:
-          when: on_fail
           type: approval
+          requires:
+            - say-hello: failed
 
       # gate runs in BOTH cases:
       # - after say-hello if it succeeded
@@ -40,4 +39,4 @@ workflows:
                 - success
             - say-hello:
                 - success
-                - failure
+                - failed
