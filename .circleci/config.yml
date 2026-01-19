@@ -8,7 +8,13 @@ jobs:
       - checkout
       - run:
           name: "Random pass/fail"
-          command: echo "Passing this run."
+          command: |
+            if [ "$RANDOM" -gt 16384 ]; then
+              echo "Failing this run."
+              exit 1
+            else
+              echo "Passing this run."
+            fi
 
 workflows:
   say-hello-workflow:
@@ -18,3 +24,6 @@ workflows:
           type: approval
           requires:
             - say-hello
+          filters:
+            branches:
+              ignore: /.*/
