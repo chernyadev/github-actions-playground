@@ -10,7 +10,7 @@ jobs:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
-            exit 0
+            exit 1
 
   approve-auto:
     docker:
