@@ -15,3 +15,19 @@ jobs:
     steps:
       - name: Another no-op
         run: echo "Still good"
+  decide-maybe:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - id: decide
+        name: Flip a coin
+        run: |
+          echo "run=$((RANDOM % 2))" >> "$GITHUB_OUTPUT"
+  maybe:
+    runs-on: ubuntu-latest
+    needs: decide-maybe
+    if: needs.decide-maybe.outputs.run == '1'
+    steps:
+      - name: Sometimes runs
+        run: echo "Heads"
