@@ -26,9 +26,8 @@ workflows:
       - approve-failure:
           type: approval
           requires:
-            - say-hello
+            - say-hello: failed
       - dummy:
           name: dummy-pass
           requires:
-            - approve-failure
-            - say-hello
+            - approve-failure: success
