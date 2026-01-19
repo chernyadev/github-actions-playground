@@ -39,12 +39,11 @@ workflows:
     jobs:
       - say-hello
       - approve-failure:
-          name: all-good
           type: approval
           requires:
             - say-hello: failed
       - dummy:
-          name: all-good
+          name: dummy-pass
           requires:
             or:
               - approve-failure: success
