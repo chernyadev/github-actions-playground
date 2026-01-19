@@ -10,3 +10,8 @@ jobs:
     steps:
       - name: No-op
         run: echo "All good"
+  pass-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Another no-op
+        run: echo "Still good"
