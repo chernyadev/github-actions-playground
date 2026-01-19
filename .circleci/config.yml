@@ -19,8 +19,15 @@ jobs:
       # Checkout the code as the first step.
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: "Random pass/fail"
+          command: |
+            rand=$((RANDOM % 2))
+            echo "Random integer: $rand"
+            if [ "$rand" -eq 0 ]; then
+              echo "Failing this run."
+              exit 1
+            fi
+            echo "Passing this run."
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/guides/orchestrate/workflows/ & https://circleci.com/docs/reference/configuration-reference/#workflows
@@ -29,11 +36,7 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - say-hello
-      - approve-1:
-          type: approval
-          requires:
-            - say-hello: success
-      - approve-2:
+      - approve-failure:
           type: approval
           requires:
             - say-hello: failed
