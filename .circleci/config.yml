@@ -14,43 +14,23 @@ jobs:
       - run:
           name: Post Stats to GitHub PR
           command: |
-            set -euo pipefail
-      
-            sudo apt-get update
-            sudo apt-get install -y jq
-      
-            pr_response=$(
-              curl --fail-with-body -sS -L \
-                --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
-                -u "$GH_USER:$GH_TOKEN"
-            )
-      
-            # If GitHub returned an error object, print it and stop.
-            if ! echo "$pr_response" | jq -e 'type == "array"' >/dev/null; then
-              echo "GitHub API did not return a PR list (array). Response:"
-              echo "$pr_response" | jq . || echo "$pr_response"
-              exit 1
-            fi
-      
-            if [ "$(echo "$pr_response" | jq 'length')" -eq 0 ]; then
+            sudo apt-get install jq
+
+            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" -u $GH_USER:$GH_TOKEN)
+
+            if [ $(echo $pr_response | jq length) -eq 0 ]; then
               echo "No PR found to update"
-              exit 0
+            else
+              echo $pr_response
+              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
             fi
-      
-            pr_comment_url="$(echo "$pr_response" | jq -r '.[0]._links.comments.href // empty')"
-            if [ -z "$pr_comment_url" ]; then
-              echo "PR found, but comments URL missing. Response:"
-              echo "$pr_response" | jq '.[0]'
-              exit 1
-            fi
-      
-            curl --fail-with-body -sS -L \
-              --request POST "$pr_comment_url" \
-              -u "$GH_USER:$GH_TOKEN" \
-              --header 'Content-Type: application/json' \
-              --data-raw '{
-                "body": "This would be the data to add"
-              }'
+
+            curl --location --request POST "$pr_comment_url" \
+            -u $GH_USER:$GH_TOKEN \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+             "body": "This would be the data to add"
+            }'
 
 workflows:
   say-hello-workflow:
