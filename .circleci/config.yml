@@ -6,51 +6,59 @@ jobs:
       - image: cimg/base:current
     steps:
       - checkout
+
       - run:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
             exit 0
+
       - run:
-          name: Post Stats to GitHub PR
+          name: Post comment to GitHub PR
           command: |
-            sudo apt-get install jq
+            set -euo pipefail
 
-            pr_response=$(curl --location --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
-            -u $GH_USER:$GH_TOKEN)
+            sudo apt-get update
+            sudo apt-get install -y jq
 
-            if [ $(echo $pr_response | jq length) -eq 0 ]; then
-              echo "No PR found to update"
-            else
-              pr_comment_url=$(echo $pr_response | jq -r ".[]._links.comments.href")
+            # Prefer CircleCI-provided PR URL(s)
+            pr_url="${CIRCLE_PULL_REQUEST:-}"
+            if [[ -z "$pr_url" && -n "${CIRCLE_PULL_REQUESTS:-}" ]]; then
+              pr_url="$(echo "$CIRCLE_PULL_REQUESTS" | cut -d',' -f1)"
             fi
 
-            curl --location --request POST "$pr_comment_url" \
-            -u $GH_USER:$GH_TOKEN \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-             "body": "My amazing comment"
-            }'
+            if [[ -z "$pr_url" ]]; then
+              echo "Not a PR build (CIRCLE_PULL_REQUEST(S) is empty). Skipping."
+              exit 0
+            fi
 
-  waiter:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - run: |
-          until [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CCI_TOKEN"| jq -r '.items[]|select(.name == "say-hello" or .name == "approve-manual")|.status' | grep -c "success") -gt 0 ]]; do
-            sleep 1
-          done
+            pr_number="${pr_url##*/}"
+            owner="${CIRCLE_PROJECT_USERNAME}"
+            repo="${CIRCLE_PROJECT_REPONAME}"
 
-  gate:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - run:
-          name: "Final gate"
-          command: |
-            echo "Gate passed."
+            if [[ -z "${GH_TOKEN:-}" ]]; then
+              echo "GH_TOKEN is not set. Skipping."
+              exit 0
+            fi
 
-workflows:
-  say-hello-workflow:
-    jobs:
-      - say-hello
+            comments_url="https://api.github.com/repos/${owner}/${repo}/issues/${pr_number}/comments"
+            payload="$(jq -n --arg body "My amazing comment" '{body: $body}')"
+
+            echo "Posting comment to PR #${pr_number} ..."
+            resp="$(
+              curl -sS -L -X POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: token ${GH_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$payload" \
+                "$comments_url"
+            )"
+
+            # If GitHub returned an error object, show it clearly.
+            if [[ "$(echo "$resp" | jq -r 'has("message")')" == "true" ]]; then
+              echo "GitHub API error:"
+              echo "$resp" | jq .
+              exit 1
+            fi
+
+            echo "Comment posted."
