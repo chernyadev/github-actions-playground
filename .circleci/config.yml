@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
       - github-cli/setup:
-          token: GH_TOKEN
+          token: GH_TOKEN_READONLY
       - run:
           name: "Post comment"
           command: |
