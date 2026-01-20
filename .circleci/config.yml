@@ -14,7 +14,7 @@ jobs:
           command: |
             echo "Failing this run."
             exit 0
-      - gh/setup
+      - github-cli/setup
 
 workflows:
   say-hello-workflow:
