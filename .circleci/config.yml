@@ -16,6 +16,10 @@ jobs:
             exit 0
       - github-cli/setup:
           token: GH_TOKEN
+      - run:
+          name: "Post comment"
+          command: |
+            gh pr comment $CIRCLE_BRANCH --body "Hi from GitHub CLI"
 
 workflows:
   say-hello-workflow:
