@@ -6,13 +6,11 @@ jobs:
       - image: cimg/base:current
     steps:
       - checkout
-
       - run:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
             exit 0
-
       - run:
           name: Post comment to GitHub PR
           command: |
@@ -62,3 +60,8 @@ jobs:
             fi
 
             echo "Comment posted."
+
+workflows:
+  say-hello-workflow:
+    jobs:
+      - say-hello
