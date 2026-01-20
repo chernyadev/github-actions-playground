@@ -15,9 +15,7 @@ jobs:
             echo "Failing this run."
             exit 0
       - github-cli/setup:
-          context:
-            - $GH_TOKEN
-            - $GH_USERNAME
+          token: GH_TOKEN
 
 workflows:
   say-hello-workflow:
