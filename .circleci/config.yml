@@ -13,7 +13,12 @@ jobs:
           name: "Random pass/fail"
           command: |
             echo "Failing this run."
-            exit 0
+            exit 1
+
+  comment-pr:
+    docker:
+      - image: cimg/base:current
+    steps:
       - github-cli/setup:
           token: GH_TOKEN
       - run:
@@ -25,3 +30,6 @@ workflows:
   say-hello-workflow:
     jobs:
       - say-hello
+      - comment-pr:
+          requires:
+            - say-hello: failed
