@@ -19,6 +19,7 @@ jobs:
     docker:
       - image: cimg/base:current
     steps:
+      - checkout
       - github-cli/setup:
           token: GH_TOKEN
       - run:
