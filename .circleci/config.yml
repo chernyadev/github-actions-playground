@@ -12,54 +12,45 @@ jobs:
             echo "Failing this run."
             exit 0
       - run:
-          name: Post comment to GitHub PR
+          name: Post Stats to GitHub PR
           command: |
             set -euo pipefail
-
+      
             sudo apt-get update
             sudo apt-get install -y jq
-
-            # Prefer CircleCI-provided PR URL(s)
-            pr_url="${CIRCLE_PULL_REQUEST:-}"
-            if [[ -z "$pr_url" && -n "${CIRCLE_PULL_REQUESTS:-}" ]]; then
-              pr_url="$(echo "$CIRCLE_PULL_REQUESTS" | cut -d',' -f1)"
-            fi
-
-            if [[ -z "$pr_url" ]]; then
-              echo "Not a PR build (CIRCLE_PULL_REQUEST(S) is empty). Skipping."
-              exit 0
-            fi
-
-            pr_number="${pr_url##*/}"
-            owner="${CIRCLE_PROJECT_USERNAME}"
-            repo="${CIRCLE_PROJECT_REPONAME}"
-
-            if [[ -z "${GH_TOKEN:-}" ]]; then
-              echo "GH_TOKEN is not set. Skipping."
-              exit 0
-            fi
-
-            comments_url="https://api.github.com/repos/${owner}/${repo}/issues/${pr_number}/comments"
-            payload="$(jq -n --arg body "My amazing comment" '{body: $body}')"
-
-            echo "Posting comment to PR #${pr_number} ..."
-            resp="$(
-              curl -sS -L -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: token ${GH_TOKEN}" \
-                -H "Content-Type: application/json" \
-                --data "$payload" \
-                "$comments_url"
-            )"
-
-            # If GitHub returned an error object, show it clearly.
-            if [[ "$(echo "$resp" | jq -r 'has("message")')" == "true" ]]; then
-              echo "GitHub API error:"
-              echo "$resp" | jq .
+      
+            pr_response=$(
+              curl --fail-with-body -sS -L \
+                --request GET "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pulls?head=$CIRCLE_PROJECT_USERNAME:$CIRCLE_BRANCH&state=open" \
+                -u "$GH_USER:$GH_TOKEN"
+            )
+      
+            # If GitHub returned an error object, print it and stop.
+            if ! echo "$pr_response" | jq -e 'type == "array"' >/dev/null; then
+              echo "GitHub API did not return a PR list (array). Response:"
+              echo "$pr_response" | jq . || echo "$pr_response"
               exit 1
             fi
-
-            echo "Comment posted."
+      
+            if [ "$(echo "$pr_response" | jq 'length')" -eq 0 ]; then
+              echo "No PR found to update"
+              exit 0
+            fi
+      
+            pr_comment_url="$(echo "$pr_response" | jq -r '.[0]._links.comments.href // empty')"
+            if [ -z "$pr_comment_url" ]; then
+              echo "PR found, but comments URL missing. Response:"
+              echo "$pr_response" | jq '.[0]'
+              exit 1
+            fi
+      
+            curl --fail-with-body -sS -L \
+              --request POST "$pr_comment_url" \
+              -u "$GH_USER:$GH_TOKEN" \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                "body": "This would be the data to add"
+              }'
 
 workflows:
   say-hello-workflow:
