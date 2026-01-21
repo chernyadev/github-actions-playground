@@ -21,11 +21,11 @@ jobs:
     steps:
       - checkout
       - github-cli/setup:
-          token: GH_TOKEN_READONLY
+          token: GH_TEST_RO
       - run:
           name: "Post comment"
           command: |
-            gh pr comment $CIRCLE_BRANCH --body "Hi from GitHub CLI"
+            gh pr comment $CIRCLE_BRANCH --body "Hi from GitHub CLI READ ONLY!"
 
 workflows:
   say-hello-workflow:
